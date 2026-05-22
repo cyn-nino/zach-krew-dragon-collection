@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zach & Krew's Dragon Collection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Fredoka:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background: linear-gradient(135deg, #051024 0%, #081828 50%, #0a1f2e 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #FFFFFF;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    #welcomeScreen {
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    .welcome-title {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 1.8em;
+      color: #FFFFFF;
+      text-shadow: 0 0 20px rgba(138, 43, 226, 0.8);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .welcome-description {
+      color: #D0E8FF;
+      font-size: 0.85em;
+      line-height: 1.4;
+      margin-bottom: 16px;
+      font-weight: 500;
+      background: rgba(138, 43, 226, 0.1);
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(138, 43, 226, 0.2);
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .welcome-button {
+      padding: 11px 28px;
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.95em;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #5E35B1, #6A82FB);
+      border: 2px solid rgba(138, 43, 226, 0.5);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 16px rgba(138, 43, 226, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .welcome-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(138, 43, 226, 0.5);
+    }
+
+    .missions-variant {
+      background: linear-gradient(135deg, #FF6B35, #FF8C42) !important;
+      border-color: rgba(255, 107, 53, 0.5) !important;
+      box-shadow: 0 6px 16px rgba(255, 107, 53, 0.3) !important;
+    }
+
+    .progress-section {
+      background: rgba(138, 43, 226, 0.12);
+      border: 1px solid rgba(138, 43, 226, 0.25);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+
+    .progress-row {
+      margin-bottom: 8px;
+    }
+
+    .progress-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .progress-label {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.75em;
+      color: #E8F5FF;
+      font-weight: 600;
+      margin-bottom: 3px;
+      text-align: center;
+    }
+
+    .progress-bar-outer {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 5px;
+      height: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(138, 43, 226, 0.2);
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+    }
+
+    .progress-bar-inner.eggs {
+      background: linear-gradient(90deg, #5E35B1, #6A82FB);
+    }
+
+    .progress-bar-inner.dragons {
+      background: linear-gradient(90deg, #00D084, #00E5CC);
+    }
+
+    .progress-bar-inner.missions {
+      background: linear-gradient(90deg, #FF6B35, #FF8C42);
+    }
+
+    .progress-percent {
+      font-size: 0.6em;
+      font-weight: 700;
+      color: #FFFFFF;
+      font-family: 'Fredoka One', sans-serif;
+      padding: 0 2px;
+    }
+
+    .progress-count {
+      font-size: 0.7em;
+      color: #D0E8FF;
+      text-align: center;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .progress-eggs-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 3px;
+      margin-top: 6px;
+    }
+
+    .progress-egg {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 50% 50% 50% 40%;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7em;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(138, 43, 226, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .progress-egg.collected {
+      background: linear-gradient(135deg, #5E35B1, #6A82FB);
+      border-color: rgba(138, 43, 226, 0.6);
+      box-shadow: 0 2px 6px rgba(138, 43, 226, 0.4);
+    }
+
+    .progress-egg.uncollected {
+      background: linear-gradient(135deg, #444, #666);
+      opacity: 0.5;
+      filter: grayscale(70%);
+      border-color: rgba(100, 100, 100, 0.3);
+    }
+
+    .view {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .view-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, rgba(94, 53, 177, 0.3), rgba(106, 130, 251, 0.3));
+      border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+      margin-bottom: 12px;
+      border-radius: 8px;
+    }
+
+    .view-title {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 1.2em;
+      color: #FFFFFF;
+      text-shadow: 0 0 10px rgba(138, 43, 226, 0.6);
+    }
+
+    .back-button {
+      background: rgba(138, 43, 226, 0.3);
+      border: 1px solid rgba(138, 43, 226, 0.5);
+      color: #E8F5FF;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.8em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      background: rgba(138, 43, 226, 0.5);
+      box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3);
+    }
+
+    .dragon-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .dragon-egg {
+      aspect-ratio: 1;
+      border-radius: 50% 50% 50% 40%;
+      transform: rotate(-45deg);
+      background: linear-gradient(135deg, #5E35B1, #6A82FB);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6em;
+      cursor: pointer;
+      border: 2px solid rgba(138, 43, 226, 0.5);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+      position: relative;
+    }
+
+    .dragon-egg.uncollected {
+      opacity: 0.5;
+      filter: grayscale(70%);
+      background: linear-gradient(135deg, #444, #666);
+      border-color: rgba(100, 100, 100, 0.3);
+    }
+
+    .dragon-egg:hover:not(.uncollected) {
+      transform: rotate(-45deg) scale(1.05);
+      box-shadow: 0 6px 16px rgba(138, 43, 226, 0.5);
+    }
+
+    .dragon-egg.collected::after {
+      content: '✓';
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #00D084;
+      color: white;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6em;
+      font-weight: 700;
+      transform: rotate(45deg);
+    }
+
+    .profile-scroll {
+      max-height: 75vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .profile-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .profile-scroll::-webkit-scrollbar-track {
+      background: rgba(138, 43, 226, 0.1);
+      border-radius: 3px;
+    }
+
+    .profile-scroll::-webkit-scrollbar-thumb {
+      background: rgba(138, 43, 226, 0.4);
+      border-radius: 3px;
+    }
+
+    .dragon-profile-card {
+      background: rgba(94, 53, 177, 0.15);
+      border: 2px solid rgba(138, 43, 226, 0.3);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .dragon-name {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 1.3em;
+      color: #FFFFFF;
+      text-align: center;
+      margin-bottom: 6px;
+      text-shadow: 0 0 10px rgba(138, 43, 226, 0.6);
+    }
+
+    .dragon-type {
+      font-size: 0.8em;
+      color: #B8D8FF;
+      text-align: center;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .dragon-egg-large {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 10px;
+      border-radius: 50% 50% 50% 40%;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3em;
+      border: 2px solid rgba(138, 43, 226, 0.4);
+    }
+
+    .detail-row {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      border-left: 3px solid rgba(138, 43, 226, 0.5);
+    }
+
+    .detail-label {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.7em;
+      color: #FFB366;
+      font-weight: 600;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
+
+    .detail-text {
+      font-size: 0.8em;
+      color: #D0E8FF;
+      line-height: 1.3;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .small-button {
+      padding: 8px 10px;
+      background: rgba(138, 43, 226, 0.25);
+      border: 1px solid rgba(138, 43, 226, 0.4);
+      color: #E8F5FF;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.75em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .small-button:hover {
+      background: rgba(138, 43, 226, 0.4);
+      box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3);
+    }
+
+    .problem-card {
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+
+    .problem-title {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.75em;
+      color: #FFB366;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .problem-text {
+      font-size: 0.8em;
+      color: #FFD9B3;
+      line-height: 1.3;
+    }
+
+    .heal-button {
+      width: 100%;
+      padding: 8px;
+      background: linear-gradient(135deg, #00D084, #00E5CC);
+      border: 1px solid rgba(0, 212, 132, 0.4);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.8em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .heal-button:hover {
+      box-shadow: 0 4px 12px rgba(0, 212, 132, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .heal-button.healed {
+      background: linear-gradient(135deg, #00B070, #00C880);
+      opacity: 0.7;
+    }
+
+    .missions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .mission-card {
+      background: rgba(94, 53, 177, 0.2);
+      border: 2px solid rgba(138, 43, 226, 0.3);
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      text-align: center;
+      min-height: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mission-card.not-completed {
+      opacity: 0.5;
+      filter: grayscale(70%);
+      background: rgba(100, 100, 100, 0.1);
+      border-color: rgba(100, 100, 100, 0.2);
+    }
+
+    .mission-card.completed {
+      background: linear-gradient(135deg, rgba(0, 212, 132, 0.25), rgba(0, 229, 204, 0.25));
+      border-color: rgba(0, 212, 132, 0.5);
+      box-shadow: 0 4px 12px rgba(0, 212, 132, 0.2);
+    }
+
+    .mission-card:hover:not(.not-completed) {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 212, 132, 0.3);
+    }
+
+    .mission-emoji {
+      font-size: 1.8em;
+      margin-bottom: 2px;
+    }
+
+    .mission-title {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.65em;
+      color: #E8F5FF;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .mission-card.completed .mission-title {
+      color: #FFFFFF;
+    }
+
+    .mission-checkmark {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #00D084;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75em;
+      font-weight: 700;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #051024, #081828);
+      border: 2px solid rgba(138, 43, 226, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+      max-width: 300px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+      background: rgba(138, 43, 226, 0.1);
+      border-radius: 3px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+      background: rgba(138, 43, 226, 0.4);
+      border-radius: 3px;
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+      padding-bottom: 8px;
+    }
+
+    .modal-emoji {
+      font-size: 2.5em;
+      margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 1.1em;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+    }
+
+    .modal-section {
+      margin-bottom: 10px;
+    }
+
+    .modal-section-title {
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.75em;
+      color: #FFB366;
+      font-weight: 600;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .modal-section-text {
+      font-size: 0.8em;
+      color: #D0E8FF;
+      line-height: 1.4;
+    }
+
+    .modal-section-list {
+      font-size: 0.8em;
+      color: #D0E8FF;
+      margin-left: 8px;
+      line-height: 1.4;
+    }
+
+    .modal-section-list li {
+      margin-bottom: 3px;
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 12px;
+      border-top: 1px solid rgba(138, 43, 226, 0.3);
+      padding-top: 10px;
+    }
+
+    .modal-button {
+      padding: 8px;
+      border: 1px solid rgba(138, 43, 226, 0.4);
+      background: rgba(138, 43, 226, 0.2);
+      color: #E8F5FF;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Fredoka One', sans-serif;
+      font-size: 0.8em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .modal-button:hover {
+      background: rgba(138, 43, 226, 0.35);
+    }
+
+    .modal-button.help {
+      background: linear-gradient(135deg, #00D084, #00E5CC);
+      border-color: rgba(0, 212, 132, 0.4);
+      color: white;
+    }
+
+    .modal-button.help:hover {
+      box-shadow: 0 4px 12px rgba(0, 212, 132, 0.3);
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.8; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+      animation: shimmer 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 12px;
+      }
+
+      .welcome-title {
+        font-size: 1.6em;
+      }
+
+      .dragon-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+
+      .missions-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+
+      .mission-card {
+        min-height: 60px;
+      }
+
+      .modal-content {
+        max-width: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+
+  <div class="container">
+    <div id="welcomeScreen" class="view">
+      <h1 class="welcome-title">🐉 Zach & Krew's Dragon Collection</h1>
+      <p class="welcome-description">
+        Hunt for 12 dragon eggs hidden around your home. Find each egg to collect the dragon. Heal them in the dragon hospital. Complete 20 fun missions to keep them happy!
+      </p>
+
+      <div class="button-group">
+        <button class="welcome-button" onclick="startHunt()">See My Dragons!</button>
+        <button class="welcome-button missions-variant" onclick="goToMissions()">🎯 Dragon Missions</button>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-row">
+          <div class="progress-label">🥚 EGGS FOUND</div>
+          <div class="progress-bar-outer">
+            <div class="progress-bar-inner eggs" id="eggProgressBar" style="width: 0%;">
+              <span class="progress-percent" id="eggPercent">0%</span>
+            </div>
+          </div>
+          <div class="progress-count"><span id="eggCount">0</span>/12</div>
+        </div>
+
+        <div class="progress-row">
+          <div class="progress-label">💚 DRAGONS HEALED</div>
+          <div class="progress-bar-outer">
+            <div class="progress-bar-inner dragons" id="dragonProgressBar" style="width: 0%;">
+              <span class="progress-percent" id="dragonPercent">0%</span>
+            </div>
+          </div>
+          <div class="progress-count"><span id="dragonCount">0</span>/12</div>
+        </div>
+
+        <div class="progress-row">
+          <div class="progress-label">⭐ MISSIONS COMPLETED</div>
+          <div class="progress-bar-outer">
+            <div class="progress-bar-inner missions" id="missionProgressBar" style="width: 0%;">
+              <span class="progress-percent" id="missionPercent">0%</span>
+            </div>
+          </div>
+          <div class="progress-count"><span id="missionCount">0</span>/20</div>
+        </div>
+
+        <div class="progress-eggs-grid" id="welcomeEggGrid"></div>
+      </div>
+    </div>
+
+    <div id="dashboardView" class="view hidden">
+      <div class="view-header">
+        <div class="view-title">🐉 Zach & Krew's Dragons</div>
+        <button class="back-button" onclick="backToWelcome()">⬅ Menu</button>
+      </div>
+      <div class="dragon-grid" id="dragonGrid"></div>
+    </div>
+
+    <div id="dragonView" class="view hidden">
+      <div class="view-header">
+        <div class="view-title" id="profileTitle">Dragon Profile</div>
+        <button class="back-button" onclick="backToDashboard()">⬅ Back</button>
+      </div>
+
+      <div class="profile-scroll">
+        <div class="dragon-profile-card">
+          <div class="dragon-name" id="dragonName">Dragon</div>
+          <div class="dragon-type" id="dragonType">Type</div>
+          <div class="dragon-egg-large" id="dragonEggLarge">🥚</div>
+
+          <div class="action-buttons">
+            <button class="small-button" onclick="playDragonSound()">🔊 Sound</button>
+            <button class="small-button" onclick="playHatchingSequence()">✨ Hatch</button>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">🥚 Egg Color</div>
+            <div class="detail-text" id="eggColor">Color</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">👯 Best Friend</div>
+            <div class="detail-text" id="bestFriend">Friend</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">💭 Personality</div>
+            <div class="detail-text" id="personality">Personality</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">❤️ LOVES</div>
+            <div class="detail-text" id="likes">Things they like</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">😢 DISLIKES</div>
+            <div class="detail-text" id="dislikes">Things they dislike</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">🏠 Favorite Home</div>
+            <div class="detail-text" id="favHome">Home location</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">✨ Fun Fact</div>
+            <div class="detail-text" id="funFact">Interesting fact</div>
+          </div>
+
+          <div class="problem-card">
+            <div class="problem-title">🩹 NEEDS HELP:</div>
+            <div class="problem-text" id="problemText">Problem description</div>
+          </div>
+
+          <button class="heal-button" id="healButton" onclick="toggleHealed()">💚 HEAL NOW</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="missionsView" class="view hidden">
+      <div class="view-header">
+        <div class="view-title">🎯 Zach & Krew's Missions</div>
+        <button class="back-button" onclick="backToWelcome()">⬅ Menu</button>
+      </div>
+      <div class="missions-grid" id="missionsGrid"></div>
+    </div>
+
+    <div id="missionModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-emoji" id="modalEmoji">🎯</div>
+          <div class="modal-title" id="modalTitle">Mission</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">📋 Description</div>
+          <div class="modal-section-text" id="modalDescription">Details</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">⏱️ Time</div>
+          <div class="modal-section-text" id="modalTime">5 min</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">📦 You'll Need</div>
+          <ul class="modal-section-list" id="modalSupplies"></ul>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">🎯 How to Do It</div>
+          <ol class="modal-section-list" id="modalSteps"></ol>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">💡 Pro Tips</div>
+          <ul class="modal-section-list" id="modalTips"></ul>
+        </div>
+
+        <div class="modal-buttons">
+          <button class="modal-button help" onclick="completeMission()">I'll Help! ✓</button>
+          <button class="modal-button" onclick="closeModal()">Later</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const dragons = [
+      { id: 'fizzy', name: 'FIZZY', type: 'Fire Dragon', emoji: '🔥', eggColor: 'Red & Pink', bff: 'TOOTER (brother)', problem: 'Tummy too hot from fire burps — need cool blue slime!', detailedProblem: 'Fizzy breathes fire that makes his tummy TOO hot. He needs cool blue slime to feel better and calm his flames!', likes: 'Spicy food, hot baths, dancing, red things', dislikes: 'Cold water, boring days, quiet places', favHome: 'Near the kitchen (warm and cozy!)', funFact: 'Fizzy can cook his own dinner with his fire breath!', personality: 'Super energetic and always ready for adventure!' },
+      { id: 'achoo', name: 'ACHOO', type: 'Lava Dragon', emoji: '🌋', eggColor: 'Orange', bff: 'BOING (best friend)', problem: 'Sneezing fireballs everywhere — find a blue gem!', detailedProblem: 'Poor Achoo has been sneezing so much! His sneezes shoot out tiny fireballs. A blue gem will help soothe his sneezy nose!', likes: 'Tickling games, orange juice, playing with friends', dislikes: 'Dust, loud noises, being alone', favHome: 'Friend\'s house (BOING is always nearby!)', funFact: 'Achoo\'s sneezes are so powerful they can knock over toy blocks!', personality: 'Silly, giggly, and loves making friends laugh!' },
+      { id: 'tooter', name: 'TOOTER', type: 'Storm Dragon', emoji: '⛈️', eggColor: 'Deep Blue', bff: 'FIZZY (brother)', problem: 'Hurt tail from powerful toot — needs bandage wrap!', detailedProblem: 'Tooter\'s super-powerful storm toots are amazing, but they hurt his tail! A soft bandage wrap will make it feel all better.', likes: 'Windy days, flying high, making big sounds, storms', dislikes: 'Quiet days, small spaces, keeping quiet', favHome: 'The rooftop (best place for wind!)', funFact: 'Tooter\'s toots can be heard from three rooms away!', personality: 'Loud, proud, and VERY good at making noise!' },
+      { id: 'boing', name: 'BOING', type: 'Cosmic Dragon', emoji: '✨', eggColor: 'Pink & Magenta', bff: 'ACHOO (best friend)', problem: 'Too cold from cloud bounce — find treasure to warm up!', detailedProblem: 'Boing loves bouncing on clouds but it makes him chilly! Finding magical treasure will warm him right up with joy!', likes: 'Jumping, bouncing, sparkly things, rainbows', dislikes: 'Standing still, rainy days, being sad', favHome: 'The trampoline area (bounce bounce bounce!)', funFact: 'Boing can bounce so high he touches the ceiling!', personality: 'Joyful, bouncy, and always smiling!' },
+      { id: 'muddy', name: 'MUDDY', type: 'Shadow Dragon', emoji: '🌑', eggColor: 'Dark Brown', bff: 'Mom of all dragons', problem: 'Egg freezing cold — hold and warm me up!', detailedProblem: 'This tiny egg is COLD and needs warmth! Give it lots of hugs and cuddles to warm it up and help it hatch!', likes: 'Warm hugs, cozy blankets, staying close, cuddles', dislikes: 'Being alone, cold places, darkness', favHome: 'Someone\'s arms (warm and safe!)', funFact: 'Muddy is the baby of all the dragons and needs lots of love!', personality: 'Sweet, shy, and loves being held close!' },
+      { id: 'swirly', name: 'SWIRLY', type: 'Silly Dragon', emoji: '🌀', eggColor: 'Rainbow', bff: 'SHOUTY (best friend)', problem: 'Shooting rainbows, cannot stop — need rainbow medicine!', detailedProblem: 'Swirly can\'t stop shooting rainbows everywhere! It\'s fun but tiring. Rainbow-colored activities will help her relax!', likes: 'Rainbows, spinning, colors, silly jokes, painting', dislikes: 'Gray days, sitting still, boring colors', favHome: 'The art corner (rainbow paint everywhere!)', funFact: 'Swirly\'s rainbows smell like candy and happiness!', personality: 'Colorful, creative, and always making things beautiful!' },
+      { id: 'whiffy', name: 'WHIFFY', type: 'Fog Dragon', emoji: '☁️', eggColor: 'Blue & Lavender', bff: 'BURPY (best friend)', problem: 'Stink cloud growing bigger — find special gem!', detailedProblem: 'Oh no! Whiffy\'s stink cloud is getting bigger. A special sparkling gem will help freshen things up!', likes: 'Flowers, fresh air, open windows, clean spaces', dislikes: 'Bad smells, enclosed spaces, yucky things', favHome: 'By the open window (fresh air!)', funFact: 'Despite the stink cloud, Whiffy actually LOVES the smell of flowers!', personality: 'A bit shy but super good at creating fog for hide-and-seek!' },
+      { id: 'burpy', name: 'BURPY', type: 'Night Dragon', emoji: '🌙', eggColor: 'Dark Teal & Black', bff: 'WHIFFY (best friend)', problem: 'Sore throat from burps — needs healing medicine!', detailedProblem: 'All those dragon burps have made Burpy\'s throat sore. Sweet medicine drops will soothe it right away!', likes: 'Nighttime, stars, quiet time, warm milk', dislikes: 'Daytime brightness, loud sounds, spicy food', favHome: 'A dark, cozy cave (perfect for napping!)', funFact: 'Burpy\'s burps glow faintly in the dark!', personality: 'Calm, gentle, and loves peaceful moments!' },
+      { id: 'shouty', name: 'SHOUTY', type: 'Loud Dragon', emoji: '📢', eggColor: 'Lavender & Purple', bff: 'SWIRLY (best friend)', problem: 'Headache from roaring — needs bandage and quiet!', detailedProblem: 'Shouty\'s amazing roars give him a big headache! A soft bandage and quiet time will help him feel better fast.', likes: 'Singing, cheering, yelling, being heard, parties', dislikes: 'Whispers, tiptoeing, being ignored, libraries', favHome: 'The big open field (best for roaring!)', funFact: 'Shouty\'s roar is so loud it can make echo happen!', personality: 'Confident, bold, and LOVES expressing himself loudly!' },
+      { id: 'gooey', name: 'GOOEY', type: 'Swamp Dragon', emoji: '💚', eggColor: 'Yellow-Green', bff: 'Everyone\'s buddy', problem: 'Too much slime, cannot stop — slime therapy time!', detailedProblem: 'Gooey makes SO much slime! But don\'t worry—slime activities will help him feel happy and in control again!', likes: 'Slime, mud, swamps, making things gooey, everyone!', dislikes: 'Dry things, staying clean, being excluded', favHome: 'The muddy backyard (slime paradise!)', funFact: 'Gooey\'s slime is non-toxic and actually pretty fun to play with!', personality: 'Friendly, gooey, and loves being everyone\'s buddy!' },
+      { id: 'stompy', name: 'STOMPY', type: 'Magma Dragon', emoji: '💥', eggColor: 'Dark Maroon', bff: 'SHOUTY (best friend)', problem: 'Sore feet from stomping — needs bandage wrap!', detailedProblem: 'All that stomping around has made Stompy\'s feet super sore! Comfy bandages and gentle care will help him walk again!', likes: 'Stomping, marching, making footprints, dancing hard', dislikes: 'Tiptoeing, staying still, soft music', favHome: 'Anywhere with big open space to stomp!', funFact: 'Stompy\'s stomps can make the ground shake a little!', personality: 'Energetic, powerful, and loves making an impact!' },
+      { id: 'smoky', name: 'SMOKY', type: 'Stone Dragon', emoji: '🪨', eggColor: 'Dark Gray', bff: 'MUDDY (best friend)', problem: 'Smoke too thick to see — need dark hiding spot!', detailedProblem: 'Smoky\'s smoke is so thick he can\'t see anything! He needs a quiet, dark hiding spot to rest and clear the smoke!', likes: 'Dark caves, quiet places, hiding, napping, rocks', dislikes: 'Bright lights, crowds, loud noises, being rushed', favHome: 'A dark, quiet corner (cave-like!)', funFact: 'Smoky\'s smoke smells like warm campfire and pine trees!', personality: 'Mysterious, calm, and loves peaceful solitude!' }
+    ]
+
+
+    const missions = [
+      { id: 'slime', emoji: '✨', title: 'Slime Master', description: 'Make blue slime to cool hot dragons!', time: '10 min', supplies: ['Glue', 'Borax or contact lens solution', 'Blue food coloring', 'Water', 'Mixing bowl', 'Spoon'], steps: ['Mix glue with blue coloring', 'Add borax solution slowly', 'Stir until slime forms', 'Let dragons play with it!'], tips: ['Make it stretchy and fun!', 'Use washable materials', 'Dragons love the texture', 'Blue is cooling!'] },
+      { id: 'warmth', emoji: '🔥', title: 'Warmth Quest', description: 'Hug and warm the cold dragons!', time: '5 min', supplies: ['Your arms', 'Cozy blankets', 'Stuffed dragons optional'], steps: ['Hold the cold dragon egg', 'Wrap it in a blanket', 'Give it lots of hugs', 'Tell it warm stories'], tips: ['Dragons love body heat!', 'Wrap them gently', 'Tell them you care', 'Keep them close!'] },
+      { id: 'dance', emoji: '💃', title: 'Silly Dance', description: 'Dance funny to make them laugh!', time: '5 min', supplies: ['Your body', 'Music optional', 'Open space'], steps: ['Put on silly music', 'Dance super weird', 'Make funny sounds', 'Get dragons to dance too'], tips: ['The sillier the better!', 'Dragons LOVE laughter', 'Wiggle everything!', 'No judgment zone!'] },
+      { id: 'joke', emoji: '😂', title: 'Dragon Jokes', description: 'Tell dragons your best jokes!', time: '3 min', supplies: ['Your sense of humor', 'Dragon audience'], steps: ['Think of a funny joke', 'Tell it with expression', 'Use silly voices', 'Watch dragons laugh!'], tips: ['Knock-knock jokes work!', 'Dragons love puns!', 'Be dramatic!', 'Repeat your favorites!'] },
+      { id: 'treasure', emoji: '💎', title: 'Treasure Hunt', description: 'Find hidden treasure for dragons!', time: '15 min', supplies: ['Small toys', 'Gold coins', 'Plastic gems', 'Treasure chest or box'], steps: ['Hide treasure around house', 'Tell dragons where to search', 'Let them find treasures', 'Celebrate their wins!'], tips: ['Hide in easy spots', 'Make it exciting!', 'Wrap treasures', 'Dragons love winning!'] },
+      { id: 'nest', emoji: '🛏️', title: 'Cozy Nest', description: 'Build a cozy dragon nest!', time: '15 min', supplies: ['Pillows', 'Blankets', 'Soft items', 'Your imagination'], steps: ['Gather soft materials', 'Build a nest shape', 'Add cozy blankets', 'Let dragons cuddle in it'], tips: ['Use lots of cushions!', 'Dragons love nests', 'Make it super soft', 'Add their favorite toys!'] },
+      { id: 'song', emoji: '🎵', title: 'Dragon Concert', description: 'Sing a song for dragons!', time: '5 min', supplies: ['Your voice', 'Optional instruments or pots'], steps: ['Pick a fun song', 'Sing it loud and proud', 'Use silly voices', 'Have dragons sing along!'], tips: ['Any song works!', 'Dragons love music', 'Make up dragon songs', 'Use fun instruments!'] },
+      { id: 'hug', emoji: '🤗', title: 'Dragon Hugs', description: 'Give dragons lots of hugs!', time: '5 min', supplies: ['Your love and arms', 'Stuffed dragons optional'], steps: ['Gather dragons together', 'Give big group hugs', 'Hug each one specially', 'Tell them they\'re special'], tips: ['Squeezy hugs!', 'Dragons need love', 'Hug often!', 'Love cures everything!'] },
+      { id: 'art', emoji: '🎨', title: 'Dragon Artist', description: 'Draw or paint dragons!', time: '15 min', supplies: ['Paper', 'Markers', 'Crayons', 'Paint', 'Paintbrushes', 'Water'], steps: ['Get art supplies ready', 'Draw your favorite dragons', 'Use lots of colors', 'Display the artwork!'], tips: ['Dragons are colorful!', 'All art is good!', 'Frame your creations', 'Dragons are proud!'] },
+      { id: 'adventure', emoji: '🏔️', title: 'Epic Adventure', description: 'Explore new places!', time: '20 min', supplies: ['Dragons', 'Backpack optional', 'Adventure spirit!'], steps: ['Pick a new place', 'Take dragons exploring', 'Find cool things', 'Tell adventure stories'], tips: ['Dragons love exploring!', 'Go outside!', 'Find hidden spots', 'Make memories!'] },
+      { id: 'story', emoji: '📖', title: 'Storyteller', description: 'Tell an epic dragon tale!', time: '10 min', supplies: ['Your imagination', 'Comfortable seating'], steps: ['Get cozy with dragons', 'Think of an epic tale', 'Use voices and emotions', 'Dragons love stories!'], tips: ['Make it dramatic!', 'Dragons are heroes!', 'Add magic!', 'Tell it with feeling!'] },
+      { id: 'rainbow', emoji: '🌈', title: 'Rainbow Hunt', description: 'Find rainbow colors!', time: '10 min', supplies: ['Your eyes', 'House items in rainbow colors'], steps: ['List rainbow colors', 'Hunt for red items', 'Find orange, yellow, green...', 'Complete the spectrum!'], tips: ['Dragons love colors!', 'Find items to collect', 'Make it a race!', 'Be creative!'] },
+      { id: 'shadow', emoji: '👥', title: 'Shadow Puppets', description: 'Make shadow dragon shapes!', time: '10 min', supplies: ['Light source', 'White wall or sheet', 'Your hands'], steps: ['Turn on a lamp', 'Position hands for shadows', 'Make dragon shapes', 'Add sound effects!'], tips: ['Make flying dragons!', 'Try different poses', 'Add dramatic sounds', 'Dragons love shadows!'] },
+      { id: 'map', emoji: '🗺️', title: 'Treasure Map', description: 'Draw a dragon treasure map!', time: '12 min', supplies: ['Paper', 'Markers', 'Coffee optional', 'Stickers'], steps: ['Draw map of your area', 'Mark treasure spots', 'Add dragon clues', 'Make it look ancient!'], tips: ['Use crumpled paper!', 'Add X marks!', 'Dragons love mysteries!', 'Make it colorful!'] },
+      { id: 'karaoke', emoji: '🎤', title: 'Karaoke Dragon', description: 'Sing your favorite song!', time: '8 min', supplies: ['Your voice', 'Optional microphone or hairbrush'], steps: ['Pick your song', 'Sing with style', 'Use a pretend microphone', 'Take a bow!'], tips: ['Dragons are fans!', 'Any song works!', 'Be confident!', 'Encores encouraged!'] },
+      { id: 'castle', emoji: '🏰', title: 'Dragon Castle', description: 'Build an epic castle!', time: '20 min', supplies: ['Boxes', 'Blocks', 'Cardboard', 'Tape', 'Markers'], steps: ['Stack and build', 'Add towers', 'Create a moat', 'Place dragons inside!'], tips: ['Make it HUGE!', 'Dragons are royalty!', 'Add decorations!', 'Build carefully!'] },
+      { id: 'trivia', emoji: '❓', title: 'Dragon Trivia', description: 'Ask dragons fun questions!', time: '10 min', supplies: ['Your knowledge', 'Fun questions'], steps: ['Think of questions', 'Ask dragons', 'Give them thinking time', 'Celebrate guesses!'], tips: ['Dragons are smart!', 'Mix easy and hard', 'Give hints!', 'Make it fun!'] },
+      { id: 'paint', emoji: '🎨', title: 'Face Paint', description: 'Paint dragon faces!', time: '12 min', supplies: ['Face paint', 'Brushes', 'Mirror', 'Washcloths'], steps: ['Get face paint ready', 'Paint a dragon face', 'Add scales and details', 'Show dragons!'], tips: ['Dragons love this!', 'Use washable paint!', 'Add sparkles!', 'Take photos!'] },
+      { id: 'meditate', emoji: '🧘', title: 'Dragon Zen', description: 'Meditate with dragons!', time: '10 min', supplies: ['Quiet space', 'Comfortable sitting', 'Calm mindset'], steps: ['Find a calm spot', 'Sit with dragons', 'Breathe slowly', 'Feel peaceful energy'], tips: ['Dragons need rest!', 'Be quiet and still', 'Peaceful vibes!', 'Dragons appreciate calm!'] },
+      { id: 'party', emoji: '🎉', title: 'Dragon Party', description: 'Throw a dragon celebration!', time: '30 min', supplies: ['Decorations', 'Snacks', 'Music', 'Party spirit!'], steps: ['Decorate with streamers', 'Play party music', 'Serve dragon snacks', 'Dance and celebrate!'], tips: ['Dragons LOVE parties!', 'Make it magical!', 'Invite all dragons!', 'Celebrate together!'] }
+    ];
+
+    let currentDragon = null;
+    let currentMission = null;
+
+    function isCollected(id) {
+      const collected = JSON.parse(localStorage.getItem('collected') || '[]');
+      return collected.includes(id);
+    }
+
+    function markCollected(id) {
+      let collected = JSON.parse(localStorage.getItem('collected') || '[]');
+      if (!collected.includes(id)) {
+        collected.push(id);
+        localStorage.setItem('collected', JSON.stringify(collected));
+        updateAllProgress();
+      }
+    }
+
+    function isHealed(id) {
+      const healed = JSON.parse(localStorage.getItem('healed') || '[]');
+      return healed.includes(id);
+    }
+
+    function toggleHealed() {
+      if (!currentDragon) return;
+      playClick();
+      let healed = JSON.parse(localStorage.getItem('healed') || '[]');
+      const idx = healed.indexOf(currentDragon);
+      if (idx > -1) {
+        healed.splice(idx, 1);
+      } else {
+        healed.push(currentDragon);
+        playSuccess();
+      }
+      localStorage.setItem('healed', JSON.stringify(healed));
+      updateDragonProfile();
+      updateAllProgress();
+    }
+
+    function isMissionCompleted(id) {
+      const completed = JSON.parse(localStorage.getItem('missionsCompleted') || '[]');
+      return completed.includes(id);
+    }
+
+    function getMissionsStats() {
+      const completed = JSON.parse(localStorage.getItem('missionsCompleted') || '[]');
+      return { completed: completed.length, total: missions.length };
+    }
+
+    function getStats() {
+      const collected = JSON.parse(localStorage.getItem('collected') || '[]');
+      const healed = JSON.parse(localStorage.getItem('healed') || '[]');
+      return { collected: collected.length, healed: healed.length, total: dragons.length };
+    }
+
+    function startHunt() {
+      playClick();
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('hidden');
+      renderDashboard();
+    }
+
+    function goToMissions() {
+      playClick();
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('missionsView').classList.remove('hidden');
+      renderMissions();
+    }
+
+    function backToWelcome() {
+      playClick();
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('dragonView').classList.add('hidden');
+      document.getElementById('missionsView').classList.add('hidden');
+      document.getElementById('welcomeScreen').classList.remove('hidden');
+      updateAllProgress();
+    }
+
+    function backToDashboard() {
+      playClick();
+      document.getElementById('dragonView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('hidden');
+      renderDashboard();
+    }
+
+    function viewDragon(id) {
+      playClick();
+      currentDragon = id;
+      markCollected(id);
+      updateDragonProfile();
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('dragonView').classList.remove('hidden');
+    }
+
+    function renderDashboard() {
+      const grid = document.getElementById('dragonGrid');
+      grid.innerHTML = dragons.map(d => `<div class="dragon-egg ${isCollected(d.id) ? 'collected' : 'uncollected'}" onclick="viewDragon('${d.id}')" ondblclick="toggleDragonCollection(event, '${d.id}')">${d.emoji}</div>`).join('');
+    }
+
+    function renderMissions() {
+      const grid = document.getElementById('missionsGrid');
+      grid.innerHTML = missions.map(m => `<div class="mission-card ${isMissionCompleted(m.id) ? 'completed' : 'not-completed'}" onclick="showMissionModal('${m.id}')">${isMissionCompleted(m.id) ? '<div class="mission-checkmark">✓</div>' : ''}<div class="mission-emoji">${m.emoji}</div><div class="mission-title">${m.title}</div></div>`).join('');
+    }
+
+    function updateDragonProfile() {
+      const d = dragons.find(x => x.id === currentDragon);
+      if (!d) return;
+
+      document.getElementById('profileTitle').textContent = d.name;
+      document.getElementById('dragonName').textContent = d.name;
+      document.getElementById('dragonType').textContent = d.type;
+      document.getElementById('dragonEggLarge').textContent = d.emoji;
+      document.getElementById('eggColor').textContent = d.eggColor;
+      document.getElementById('bestFriend').textContent = d.bff;
+      document.getElementById('personality').textContent = d.personality;
+      document.getElementById('likes').textContent = d.likes;
+      document.getElementById('dislikes').textContent = d.dislikes;
+      document.getElementById('favHome').textContent = d.favHome;
+      document.getElementById('funFact').textContent = d.funFact;
+      document.getElementById('problemText').textContent = d.detailedProblem || d.problem;
+
+      const btn = document.getElementById('healButton');
+      if (isHealed(currentDragon)) {
+        btn.textContent = '✨ HEALED!';
+        btn.classList.add('healed');
+      } else {
+        btn.textContent = '💚 HEAL NOW';
+        btn.classList.remove('healed');
+      }
+    }
+
+    function showMissionModal(id) {
+      playClick();
+      const m = missions.find(x => x.id === id);
+      currentMission = id;
+      
+      document.getElementById('modalEmoji').textContent = m.emoji;
+      document.getElementById('modalTitle').textContent = m.title;
+      document.getElementById('modalDescription').textContent = m.description;
+      document.getElementById('modalTime').textContent = m.time;
+      
+      document.getElementById('modalSupplies').innerHTML = m.supplies.map(s => `<li>${s}</li>`).join('');
+      document.getElementById('modalSteps').innerHTML = m.steps.map(s => `<li>${s}</li>`).join('');
+      document.getElementById('modalTips').innerHTML = m.tips.map(t => `<li>${t}</li>`).join('');
+      
+      document.getElementById('missionModal').classList.add('show');
+    }
+
+    function closeModal() {
+      playClick();
+      document.getElementById('missionModal').classList.remove('show');
+    }
+
+    function completeMission() {
+      let completed = JSON.parse(localStorage.getItem('missionsCompleted') || '[]');
+      if (!completed.includes(currentMission)) {
+        completed.push(currentMission);
+        localStorage.setItem('missionsCompleted', JSON.stringify(completed));
+        playSuccess();
+      }
+      closeModal();
+      renderMissions();
+      updateAllProgress();
+    }
+
+    function updateAllProgress() {
+      updateWelcomeProgress();
+    }
+
+    function updateWelcomeProgress() {
+      const stats = getStats();
+      const missionStats = getMissionsStats();
+
+      const eggPercent = Math.round((stats.collected / stats.total) * 100);
+      const dragonPercent = Math.round((stats.healed / stats.total) * 100);
+      const missionPercent = Math.round((missionStats.completed / missionStats.total) * 100);
+
+      document.getElementById('eggProgressBar').style.width = eggPercent + '%';
+      document.getElementById('eggPercent').textContent = eggPercent + '%';
+      document.getElementById('eggCount').textContent = stats.collected;
+
+      document.getElementById('dragonProgressBar').style.width = dragonPercent + '%';
+      document.getElementById('dragonPercent').textContent = dragonPercent + '%';
+      document.getElementById('dragonCount').textContent = stats.healed;
+
+      document.getElementById('missionProgressBar').style.width = missionPercent + '%';
+      document.getElementById('missionPercent').textContent = missionPercent + '%';
+      document.getElementById('missionCount').textContent = missionStats.completed;
+
+      renderEggGrid();
+    }
+
+    function renderEggGrid() {
+      const grid = document.getElementById('welcomeEggGrid');
+      grid.innerHTML = dragons.map(d => `<div class="progress-egg ${isCollected(d.id) ? 'collected' : 'uncollected'}" title="${d.name}" onclick="toggleProgressEgg(event, '${d.id}')">${isCollected(d.id) ? '✓' : ''}</div>`).join('');
+    }
+
+    function toggleDragonCollection(event, id) {
+      event.stopPropagation();
+      playClick();
+      let collected = JSON.parse(localStorage.getItem('collected') || '[]');
+      const idx = collected.indexOf(id);
+      if (idx > -1) {
+        collected.splice(idx, 1);
+      } else {
+        collected.push(id);
+      }
+      localStorage.setItem('collected', JSON.stringify(collected));
+      renderDashboard();
+      updateAllProgress();
+    }
+
+    function toggleProgressEgg(event, id) {
+      event.stopPropagation();
+      playClick();
+      let collected = JSON.parse(localStorage.getItem('collected') || '[]');
+      const idx = collected.indexOf(id);
+      if (idx > -1) {
+        collected.splice(idx, 1);
+      } else {
+        collected.push(id);
+      }
+      localStorage.setItem('collected', JSON.stringify(collected));
+      updateAllProgress();
+    }
+
+    let audioStarted = false;
+
+    function playClick() {
+      try {
+        if (!audioStarted) {
+          audioStarted = true;
+          Tone.start().then(() => playNote(800, 0.08)).catch(() => playNote(800, 0.08));
+        } else {
+          playNote(800, 0.08);
+        }
+      } catch (e) {}
+    }
+
+    function playDragonSound() {
+      playClick();
+      playNote(440, 0.3);
+    }
+
+    function playHatchingSequence() {
+      playClick();
+      const notes = [330, 370, 415, 494, 523, 587, 659, 740];
+      let delay = 0;
+      notes.forEach((freq, i) => {
+        setTimeout(() => playNote(freq, 0.15), delay);
+        delay += 150;
+      });
+    }
+
+    function playSuccess() {
+      playNote(523, 0.2);
+      setTimeout(() => playNote(659, 0.2), 150);
+      setTimeout(() => playNote(784, 0.3), 300);
+    }
+
+    function playNote(freq, duration) {
+      try {
+        const synth = new Tone.Synth({
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 }
+        }).toDestination();
+        synth.triggerAttackRelease(freq, duration);
+      } catch (e) {}
+    }
+
+    function initParticles() {
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+
+      function createParticle(x, y) {
+        for (let i = 0; i < 5; i++) {
+          particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 4,
+            vy: (Math.random() - 0.5) * 4 - 1,
+            life: 1,
+            size: Math.random() * 3 + 2
+          });
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles = particles.filter(p => p.life > 0);
+        
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= 0.02;
+          p.vy += 0.1;
+          
+          ctx.fillStyle = `rgba(138, 43, 226, ${p.life * 0.6})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('click', (e) => {
+        createParticle(e.clientX, e.clientY);
+      });
+
+      animate();
+    }
+
+    window.addEventListener('load', () => {
+      initParticles();
+      updateWelcomeProgress();
+      renderDashboard();
+      renderMissions();
+
+      window.addEventListener('hashchange', () => handleHash());
+      handleHash();
+    });
+
+    function handleHash() {
+      const hash = window.location.hash.slice(1).toLowerCase();
+      
+      const dragon = dragons.find(d => d.id === hash);
+      if (dragon) {
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('dashboardView').classList.remove('hidden');
+        renderDashboard();
+        viewDragon(hash);
+        return;
+      }
+
+      const mission = missions.find(m => m.id === hash);
+      if (mission) {
+        document.getElementById('welcomeScreen').classList.add('hidden');
+        document.getElementById('missionsView').classList.remove('hidden');
+        renderMissions();
+        showMissionModal(hash);
+        return;
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('particles');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
